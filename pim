@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #+
 # by Hong Chen
-# Email: me.hongchen.cz
+# Email: me@hongchen.cz
 #-
 
 import os
@@ -10,6 +10,7 @@ import datetime
 import glob
 
 fullFileName        = sys.argv[1]
+# change your prefered terminal editor here
 editor              = 'vim'
 try:
     fileName, extension = fullFileName.split('.')
