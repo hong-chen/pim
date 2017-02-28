@@ -13,10 +13,13 @@ fullFileName        = sys.argv[1]
 # change your prefered terminal editor here
 editor              = 'vim'
 try:
-    fileName, extension = fullFileName.split('.')
+    words = fullFileName.split('.')
+    if len(words) >= 2:
+        extension = words[-1]
     if os.path.isfile(fullFileName):
         fileSize = os.path.getsize(fullFileName)
-        nLetter = len(fileName)
+        nLetter  = len(fullFileName)-len(extension)-1
+        fileName = fullFileName[:nLetter]
         # change the backup directory name here
         backupDir = '.backup_%s' % extension
         dateToday = str(datetime.date.today())
