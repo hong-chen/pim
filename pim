@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import datetime
+import glob
+
+fullFileName        = sys.argv[1]
+try:
+    fileName, extension = fullFileName.split('.')
+    if os.path.isfile(fullFileName):
+        fileSize = os.path.getsize(fullFileName)
+        nLetter = len(fileName)
+        backupDir = '.backup_%s' % extension
+        dateToday = str(datetime.date.today())
+
+        if extension in ['py', 'f', 'f90', 'ncl', 'pro'] and fileSize < 2.0e6:
+            if not os.path.isdir(backupDir):
+                os.system('mkdir %s' % backupDir)
+                fullFileName_new = '%s_%s_0001.%s' % (fileName, dateToday, extension)
+                os.system('cp %s %s/%s' % (fullFileName, backupDir, fullFileName_new))
+                os.system('vim %s' % fullFileName)
+            else:
+                fullFileNames = sorted(glob.glob('%s/%s*' % (backupDir, fileName)))
+                nFile = len(fullFileNames)
+                if nFile == 0:
+                    fullFileName_new = '%s_%s_0001.%s' % (fileName, dateToday, extension)
+                    os.system('cp %s %s/%s' % (fullFileName, backupDir, fullFileName_new))
+                    os.system('vim %s' % fullFileName)
+                else:
+                    fullFileName_latest = fullFileNames[-1].split('/')[-1]
+                    fileName_latest = fullFileName_latest.split('.')[0]
+                    date = fileName_latest[nLetter+1:nLetter+11]
+                    count = fileName_latest[nLetter+12:]
+                    if date == dateToday:
+                        count = str(int(count)+1).zfill(4)
+                        if int(count) > 100:
+                            count_del = str(int(count)-100).zfill(4)
+                            fullFileName_del = '%s_%s_%s.%s' % (fileName, dateToday, count_del, extension)
+                            os.system('rm -rf %s/%s' % (backupDir, fullFileName_del))
+                    else:
+                        count = '0001'
+                    fullFileName_new = '%s_%s_%s.%s' % (fileName, dateToday, count, extension)
+                    os.system('cp %s %s/%s' % (fullFileName, backupDir, fullFileName_new))
+                    os.system('vim %s' % fullFileName)
+        else:
+            os.system('vim %s' % fullFileName)
+    else:
+        os.system('vim %s' % fullFileName)
+except ValueError:
+    os.system('vim %s' % fullFileName)
