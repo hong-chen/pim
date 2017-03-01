@@ -16,7 +16,7 @@ extensionList = ['py', 'f', 'f90', 'ncl', 'pro']
 # change the name for the backup directory here
 backupDir     = '.backup'
 # maximum number of backup files
-NmaxFile      = 9999
+NmaxFile      = 99999
 
 Narg = len(sys.argv)
 
@@ -49,9 +49,10 @@ elif Narg == 2:
             dateToday = str(datetime.date.today())
             NletterD  = len(dateToday)
             Nzeros    = len(str(NmaxFile))
+            parDir    = os.getcwd().split('/')[-1]
 
             # file extension is not in the pre-defined extension list or file size is greater than ~2MB
-            if extension not in extensionList or fileSize >= 2.0e6:
+            if extension not in extensionList or fileSize >= 2.0e6 or parDir == backupDir:
                 os.system('%s %s' % (editor, fullFileName))
 
             # file has extension in the pre-defined extension list and file size is smaller than ~2MB
@@ -78,20 +79,15 @@ elif Narg == 2:
                     # has backup files under the .backup directory
                     else:
                         fullFileName_latest = fullFileNames[-1].split('/')[-1]
-                        NletterF_latest    = len(fullFileName_latest)-len(extension)-1
+                        NletterF_latest     = len(fullFileName_latest)-len(extension)-1
                         fileName_latest     = fullFileName_latest[:NletterF_latest]
                         date_s  = fileName_latest[NletterF+1:NletterF+NletterD+1]
                         count_s = fileName_latest[NletterF+NletterD+2:]
-                        count   = int(count)
+                        count   = int(count_s)
 
                         # backup files are created on today
                         if date_s == dateToday:
-                            count_new = count +1
-                            if count_new > NmaxFile:
-                                # need to be modified
-                                count_del = count-NmaxFile
-                                fullFileName_del = '%s_%s_%s.%s' % (fileName, dateToday, str(count_del).zfill(Nzeros), extension)
-                                os.system('rm -rf %s/%s' % (backupDir, fullFileName_del))
+                            count_new = count + 1
 
                         # backup files are created on a different day
                         else:
