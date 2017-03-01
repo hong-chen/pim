@@ -12,7 +12,7 @@ import glob
 # change your prefered terminal editor here
 editor        = 'vim'
 # add more file extensions here
-extensionList = ['py', 'f', 'f90', 'ncl', 'pro']
+extensionList = ['py', 'f', 'f90', 'ncl', 'pro', 'sh']
 # change the name for the backup directory here
 backupDir     = '.backup'
 # maximum number of backup files
