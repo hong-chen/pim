@@ -15,55 +15,88 @@ editor        = 'vim'
 extensionList = ['py', 'f', 'f90', 'ncl', 'pro']
 # change the name for the backup directory here
 backupDir     = '.backup'
+# maximum number of backup files
+NmaxFile      = 9999
 
-if len(sys.argv) == 2:
+Narg = len(sys.argv)
+
+# only one argument presents, e.g., pim
+if Narg == 1:
+    os.system('%s' % editor)
+
+# two arguments present, e.g., pim hello.py
+elif Narg == 2:
     fullFileName  = sys.argv[1]
     words = fullFileName.split('.')
 
+    # file with no extension, e.g., pim hello
     if len(words) == 1:
         os.system('%s %s' % (editor, fullFileName))
 
+    # file has an extension, e.g. pim hello.v1.py
     elif len(words) >= 2:
         extension = words[-1]
 
-        if os.path.isfile(fullFileName):
-            fileSize = os.path.getsize(fullFileName)
-            nLetter  = len(fullFileName)-len(extension)-1
-            fileName = fullFileName[:nLetter]
-            dateToday = str(datetime.date.today())
+        # file does not exist
+        if not os.path.isfile(fullFileName):
+            os.system('%s %s' % (editor, fullFileName))
 
-            if extension in extensionList and fileSize < 2.0e6:
+        # file already exists
+        else:
+            fileSize  = os.path.getsize(fullFileName)
+            NletterF  = len(fullFileName)-len(extension)-1
+            fileName  = fullFileName[:NletterF]
+            dateToday = str(datetime.date.today())
+            NletterD  = len(dateToday)
+            Nzeros    = len(str(NmaxFile))
+
+            # file extension is not in the pre-defined extension list or file size is greater than ~2MB
+            if extension not in extensionList or fileSize >= 2.0e6:
+                os.system('%s %s' % (editor, fullFileName))
+
+            # file has extension in the pre-defined extension list and file size is smaller than ~2MB
+            else:
+
+                # .backup directory does not exist
                 if not os.path.isdir(backupDir):
                     os.system('mkdir %s' % backupDir)
-                    fullFileName_new = '%s_%s_0001.%s' % (fileName, dateToday, extension)
+                    fullFileName_new = '%s_%s_%s.%s' % (fileName, dateToday, str(1).zfill(Nzeros), extension)
                     os.system('cp %s %s/%s' % (fullFileName, backupDir, fullFileName_new))
                     os.system('%s %s' % (editor, fullFileName))
+
+                # .backup directory already exists
                 else:
                     fullFileNames = sorted(glob.glob('%s/%s*' % (backupDir, fileName)))
-                    nFile = len(fullFileNames)
+                    nFile         = len(fullFileNames)
+
+                    # no backup file exists under the .backup directory
                     if nFile == 0:
-                        fullFileName_new = '%s_%s_0001.%s' % (fileName, dateToday, extension)
+                        fullFileName_new = '%s_%s_%s.%s' % (fileName, dateToday, str(1).zfill(Nzeros), extension)
                         os.system('cp %s %s/%s' % (fullFileName, backupDir, fullFileName_new))
                         os.system('%s %s' % (editor, fullFileName))
+
+                    # has backup files under the .backup directory
                     else:
                         fullFileName_latest = fullFileNames[-1].split('/')[-1]
-                        fileName_latest = fullFileName_latest.split('.')[0]
-                        date = fileName_latest[nLetter+1:nLetter+11]
-                        count = fileName_latest[nLetter+12:]
-                        if date == dateToday:
-                            count = str(int(count)+1).zfill(4)
-                            if int(count) > 1000:
-                                count_del = str(int(count)-1000).zfill(4)
-                                fullFileName_del = '%s_%s_%s.%s' % (fileName, dateToday, count_del, extension)
+                        NletterF_latest    = len(fullFileName_latest)-len(extension)-1
+                        fileName_latest     = fullFileName_latest[:NletterF_latest]
+                        date_s  = fileName_latest[NletterF+1:NletterF+NletterD+1]
+                        count_s = fileName_latest[NletterF+NletterD+2:]
+                        count   = int(count)
+
+                        # backup files are created on today
+                        if date_s == dateToday:
+                            count_new = count +1
+                            if count_new > NmaxFile:
+                                # need to be modified
+                                count_del = count-NmaxFile
+                                fullFileName_del = '%s_%s_%s.%s' % (fileName, dateToday, str(count_del).zfill(Nzeros), extension)
                                 os.system('rm -rf %s/%s' % (backupDir, fullFileName_del))
+
+                        # backup files are created on a different day
                         else:
-                            count = '0001'
-                        fullFileName_new = '%s_%s_%s.%s' % (fileName, dateToday, count, extension)
+                            count_new = 1
+
+                        fullFileName_new = '%s_%s_%s.%s' % (fileName, dateToday, str(count_new).zfill(Nzeros), extension)
                         os.system('cp %s %s/%s' % (fullFileName, backupDir, fullFileName_new))
                         os.system('%s %s' % (editor, fullFileName))
-            else:
-                os.system('%s %s' % (editor, fullFileName))
-        else:
-            os.system('%s %s' % (editor, fullFileName))
-else:
-    os.system('%s' % editor)
