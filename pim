@@ -52,7 +52,7 @@ elif Narg == 2:
             parDir    = os.getcwd().split('/')[-1]
 
             # file extension is not in the pre-defined extension list or file size is greater than ~2MB
-            if extension not in extensionList or fileSize >= 2.0e6 or parDir == backupDir:
+            if extension.lower() not in extensionList or fileSize >= 2.0e6 or parDir == backupDir:
                 os.system('%s %s' % (editor, fullFileName))
 
             # file has extension in the pre-defined extension list and file size is smaller than ~2MB
@@ -67,7 +67,8 @@ elif Narg == 2:
 
                 # .backup directory already exists
                 else:
-                    fullFileNames = sorted(glob.glob('%s/%s*' % (backupDir, fileName)))
+                    pattern       = '?'*Nzeros
+                    fullFileNames = sorted(glob.glob('%s/%s_%s_%s.%s' % (backupDir, fileName, dateToday, pattern, extension)))
                     nFile         = len(fullFileNames)
 
                     # no backup file exists under the .backup directory
@@ -85,13 +86,7 @@ elif Narg == 2:
                         count_s = fileName_latest[NletterF+NletterD+2:]
                         count   = int(count_s)
 
-                        # backup files are created on today
-                        if date_s == dateToday:
-                            count_new = count + 1
-
-                        # backup files are created on a different day
-                        else:
-                            count_new = 1
+                        count_new = count + 1
 
                         fullFileName_new = '%s_%s_%s.%s' % (fileName, dateToday, str(count_new).zfill(Nzeros), extension)
                         os.system('cp %s %s/%s' % (fullFileName, backupDir, fullFileName_new))
